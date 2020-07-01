@@ -64,7 +64,7 @@ class WatchlistWrapper ( MutableSet ):
 	def add ( self, x ):
 		if x not in self._syms:
 			result = AppendWatchlist(
-				auth = self._auth(),
+				auth			= self._auth(),
 				watchlist_name		= self._name,
 				watchlist_symbols	= x
 			).request()
