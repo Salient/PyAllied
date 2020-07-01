@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,36 +21,36 @@
 # SOFTWARE.
 
 # from requests.exceptions import ConnectionError, HTTPError, Timeout
-from enum					import Enum
-from requests				import Request, Session
-from requests.exceptions	import HTTPError,Timeout
-from .utils					import (
-	pretty_print_POST,
-	JSONStreamParser
+from enum                                       import Enum
+from requests                           import Request, Session
+from requests.exceptions        import HTTPError,Timeout
+from .utils                                     import (
+        pretty_print_POST,
+        JSONStreamParser
 )
 import datetime
 import logging
 
-
+from pprint import pprint
 
 
 
 """
 - Auth-less request,
-	* (market clock, etc)
-	* should be a class method
+        * (market clock, etc)
+        * should be a class method
 
 - Auth-ed request
-	* get information
-	* submit order
-	* etc
-	* should be object method
+        * get information
+        * submit order
+        * etc
+        * should be object method
 
 
 - Rate limits
-	* 40 per minute, order submission (including submit, modify, cancel)
-	* 60 per minute, market quotes
-	* 180 per minute, user info like balance, summary, etc
+        * 40 per minute, order submission (including submit, modify, cancel)
+        * 60 per minute, market quotes
+        * 180 per minute, user info like balance, summary, etc
 
 """
 
@@ -62,70 +62,70 @@ _timeout = 1.0
 
 
 class RequestType(Enum):
-	Order	= 1
-	Quote	= 2
-	Info	= 3
+        Order   = 1
+        Quote   = 2
+        Info    = 3
 
 
 
 
 class Endpoint:
 
-	# Host
-	_host = 'https://api.tradeking.com/v1/'
-	
-	# One of RequestType
-	_type = None
+        # Host
+        _host = 'https://api.tradeking.com/v1/'
 
-	# Extension
-	_resource = ''
+        # One of RequestType
+        _type = None
 
-	# GET, POST, etc.
-	_method	= 'GET'
+        # Extension
+        _resource = ''
 
-	# results
-	_results = None
+        # GET, POST, etc.
+        _method = 'GET'
 
-	req = None
-	
+        # results
+        _results = None
 
-
-
-
-	@classmethod
-	def url ( cls ):
-		return cls._host + cls._resource
-	
-
-
-
-
-	@classmethod
-	def resolve ( cls, **kwargs):
-		"""Can insert account information into the url
-		This is just a placeholder
-		"""
-		return cls.url()
+        req = None
 
 
 
 
 
+        @classmethod
+        def url ( cls ):
+                return cls._host + cls._resource
 
-	def extract ( self, response ):
-		"""Extract certain fields from response
-		"""
-		return response.json().get('response')
+
+
+
+
+        @classmethod
+        def resolve ( cls, **kwargs):
+                """Can insert account information into the url
+                This is just a placeholder
+                """
+                return cls.url()
 
 
 
 
 
 
-	def req_body ( self, **kwargs ):
-		"""Return get params together with post body data
-		"""
-		return None, None
+        def extract ( self, response ):
+                """Extract certain fields from response
+                """
+                return response.json().get('response')
+
+
+
+
+
+
+        def req_body ( self, **kwargs ):
+                """Return get params together with post body data
+                """
+                return None, None
 
 
 
@@ -133,72 +133,82 @@ class Endpoint:
 
 
 
-	def _fetch_raw ( self, stream=False ):
-		return self.s.send(
-			self.req,
-			stream=stream
-		)
+        def _fetch_raw ( self, stream=False ):
+                return self.s.send(
+                        self.req,
+                        stream=stream
+                )
 
 
 
-	def request ( self=None ):
-		"""Execute an entire loop, and aggregate results
-		"""
-		x = self._fetch_raw()
+        def request ( self=None ):
+                """Execute an entire loop, and aggregate results
+                """
+                # x = self._fetch_raw()
+                # use current session instance to send prepared request
+                x = self.s.send(self.req)
 
-		x.raise_for_status()
+                # raise exception now, if there was an http error
+                x.raise_for_status()
 
-		return self.extract ( x )
+                if x is None:
+                    print('Empty response')
+                else:
+                    print('RESPONE-------')
+                    pprint(x)
 
-
-
-
-	
-
-	def __init__ ( self, auth = None, **kwargs ):
-		"""Create and send request
-		Return the processed result
-		"""
-
-		# Get post and get data
-		send_params, send_data = self.req_body (**kwargs)
-
-
-		# Get the session
-		if auth is not None:
-			self.s = auth.sess
-		else:
-			self.s = Session()
-
-
-		req_auth = None if auth is None else auth.auth
-		
-		# Create a prepped request
-		self.req = self.s.prepare_request(
-			Request(
-				self._method,
-				self.resolve( **kwargs ),
-				auth	= req_auth,
-				params	= send_params,
-				data	= send_data
-			)
-		)
+                return self.extract ( x )
 
 
 
 
 
+
+        def __init__ ( self, auth = None, **kwargs ):
+                """Create and send request
+                Return the processed result
+                """
+
+                # Get post and get data
+                send_params, send_data = self.req_body (**kwargs)
+
+
+                # Get the session
+                if auth is not None:
+                        self.s = auth.sess
+                else:
+                        self.s = Session()
+
+
+                req_auth = None if auth is None else auth.auth
+
+                # Create a prepped request
+                self.req = Request(
+                                self._method,
+                                self.resolve( **kwargs ),
+                                auth    = req_auth,
+                                params  = send_params,
+                                data    = send_data
+                                ).prepare()
+
+                pprint('New request-------' + self.req.method)
+                pprint('TO ' + self.req.url)
+                if self.req.body is None:
+                    print('Empty body')
+                else:
+                    print('Request body:')
+                    pprint(self.req.body)
 
 
 
 class AuthenticatedEndpoint ( Endpoint ):
-	"""Simple class, just require auth. Non-auth is non-optional
-	"""
-	def __init__ ( self, auth, **kwargs ):
-		"""Create and send request
-		Return the processed result
-		"""
-		super().__init__(auth,**kwargs)
+        """Simple class, just require auth. Non-auth is non-optional
+        """
+        def __init__ ( self, auth, **kwargs ):
+                """Create and send request
+                Return the processed result
+                """
+                super().__init__(auth,**kwargs)
 
 
 
@@ -207,12 +217,12 @@ class AuthenticatedEndpoint ( Endpoint ):
 
 
 class AccountEndpoint ( AuthenticatedEndpoint ):
-	"""Also automatically resolve url to include account number
-	"""
-	def resolve ( self, **kwargs):
-		"""Inject the account number into the call
-		"""
-		return self.url().format(kwargs.get('account_nbr'))
+        """Also automatically resolve url to include account number
+        """
+        def resolve ( self, **kwargs):
+                """Inject the account number into the call
+                """
+                return self.url().format(kwargs.get('account_nbr'))
 
 
 
@@ -220,33 +230,34 @@ class AccountEndpoint ( AuthenticatedEndpoint ):
 
 
 class StreamEndpoint ( AuthenticatedEndpoint ):
-	"""Stream an endpoint
-	"""
-	_host		= 'https://stream.tradeking.com/v1/'
-	def request ( self=None ):
-		"""Execute an entire loop, and aggregate results
-		"""
+        """Stream an endpoint
+        """
+        _host           = 'https://stream.tradeking.com/v1/'
+        def request ( self=None ):
+                """Execute an entire loop, and aggregate results
+                """
 
-		x = self._fetch_raw(stream=True)
+                # use current session instance to send prepared request
+                x = self.s.send(self.req,stream=True)
 
-		x.raise_for_status()
+                x.raise_for_status()
 
-		p = JSONStreamParser()
+                p = JSONStreamParser()
 
-		for chunk in x.iter_content( chunk_size=1 ):
-			it = p.stream(chunk.decode('utf-8'))
-			while True:
-				try:
-					row = next(it)
-				except StopIteration:
-					pass
-				else:
-					quote = row.get('quote')
-					if quote is not None:
-						yield quote
-				finally:
-					del it
-					break
+                for chunk in x.iter_content( chunk_size=1 ):
+                        it = p.stream(chunk.decode('utf-8'))
+                        while True:
+                                try:
+                                        row = next(it)
+                                except StopIteration:
+                                        pass
+                                else:
+                                        quote = row.get('quote')
+                                        if quote is not None:
+                                                yield quote
+                                finally:
+                                        del it
+                                        break
 
 
 
@@ -255,7 +266,7 @@ class StreamEndpoint ( AuthenticatedEndpoint ):
 
 
 def setTimeout ( t ):
-	"""Used to set the global request response timeout variable
-	"""
-	if t is not None:
-		_timeout = float(t)
+        """Used to set the global request response timeout variable
+        """
+        if t is not None:
+                _timeout = float(t)
