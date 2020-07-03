@@ -54,7 +54,7 @@ class WatchlistWrapper ( MutableSet ):
 
 
 	def __contains__ ( self, x ):
-		return self._syms.contains(x)
+		return x in self._syms
 
 
 	def __len__ ( self ):
@@ -199,3 +199,4 @@ class Watchlist ( MutableMapping ):
 
 	def __init__ ( self, parent ):
 		self._auth = weakref.ref(parent.auth)
+

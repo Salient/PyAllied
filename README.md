@@ -12,7 +12,7 @@ After setting up API keys, PyAlly can provide the basic/essential Ally brokerage
 Make sure to [read the docs](https://alienbrett.github.io/PyAlly)!
 
 
-## Version 1.0.2
+## Version 1.0.4
 
 The lastest redesign preserves many features of the old interface, and incorporates a few new ones.
 Version 1.0 has been designed around a simple interface which should make modifying orders easier, and many operations more pythonic.
@@ -20,6 +20,7 @@ Please note that this version breaks compatibility with all V0.X.X.
 
 * Added pythonic methods for manipulating account watchlists
 * Added quote streaming support
+* Added rate limit functionality
 * Simplified account operation methods
 * Many new order operations. Orders can now be modified or cancelled in an intuitive way
 
@@ -40,6 +41,7 @@ Please note that this version breaks compatibility with all V0.X.X.
 * [Rob Valadez](https://github.com/Rob-Valdez)
 * [Julian Traversa](https://github.com/JTraversa)
 * [Tianyu](https://github.com/Tianyu00)
+* [Salient](https://github.com/Salient)
 
 Message me on Github or [send an email](mailto:alienbrett648@gmail.com) if you enjoyed the project or thought it could be improved. I do my best to code with quality but sometimes it is easier said than done. Anyone with an interest with an eye for detail is welcome to contribute.
 

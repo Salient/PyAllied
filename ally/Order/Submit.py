@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -52,7 +52,7 @@ class Submission ( AccountEndpoint ):
 			kwargs.get('account_nbr'),
 			"/preview" if self._preview else ''
 		)
-	
+
 
 
 
@@ -62,7 +62,7 @@ class Submission ( AccountEndpoint ):
 		"""Extract certain fields from response
 		"""
 		response = response.json()['response']
-		
+
 		if response['error'] != 'Success':
 			raise ExecutionException(response['error'])
 
@@ -109,7 +109,7 @@ class Submission ( AccountEndpoint ):
 
 
 
-def submit ( self, order, preview: bool = True, type_ = None ):
+def submit ( self, order, preview: bool = True, type_ = None, block: bool = True ):
 	"""Submits an order object to Ally's servers for execution.
 
 	Given an instantiated ally object, send an order up
@@ -120,19 +120,28 @@ def submit ( self, order, preview: bool = True, type_ = None ):
 	otherwise modified.
 
 	Args:
-		order: An ally.Order.Order instance
-		preview: Specify whether to actually submit the order for execution,
+		order:
+			An ally.Order.Order instance
+
+		preview:
+			Specify whether to actually submit the order for execution,
 			or just to see mock execution info including quotes, from Ally.
-		type_: Cancels or modifies the order, if not None
-	
+
+		type_:
+			Cancels or modifies the order, if not None
+
+		block:
+			Specify whether to block thread if request exceeds rate limit
+
 	Returns:
 		An order ID string, the same added to the order object (if preview=False)
 		or a dictionary with contingent market execution data (if preview=True)
-	
+
 
 	Raises:
 		ExecutionException: Will return verbatim error from Ally's API if a problem with
 			the order is encountered.
+		RateLimitException: If block=False, rate limit problems will be raised
 
 	"""
 
@@ -146,7 +155,8 @@ def submit ( self, order, preview: bool = True, type_ = None ):
 		auth		= self.auth,
 		account_nbr = self.account_nbr,
 		preview		= preview,
-		order		= order
+		order		= order,
+		block		= block
 	).request()
 
 	return result

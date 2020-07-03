@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -44,11 +44,11 @@ class Quote ( AuthenticatedEndpoint ):
 
 		if type(quotes) != type ([]):
 			quotes = [quotes]
-		
+
 		# Zip symbols up with the response
 		for i,d in enumerate(quotes):
 			d['symbol'] = self._symbols[i]
-		
+
 		# and return it to the world
 		return quotes
 
@@ -73,9 +73,9 @@ class Quote ( AuthenticatedEndpoint ):
 		else:
 			# We were passed list
 			fmt_symbols = ','.join(symbols)
-			
 
-			
+
+
 		# Correctly format Fields, also store split up fields
 		if type(fields) == type(""):
 			# We were passed string
@@ -84,8 +84,8 @@ class Quote ( AuthenticatedEndpoint ):
 		else:
 			# We were passed list
 			fmt_fields = ','.join(fields)
-			
-		
+
+
 		# Store symbols, so we can zip them back up with
 		#  the response object
 		symbols = [ s.upper() for s in symbols ]
@@ -97,12 +97,12 @@ class Quote ( AuthenticatedEndpoint ):
 
 		# Create request paramters according to how we need them
 		params = { 'symbols':fmt_symbols }
-		
+
 		if fields != []:
 			params['fids'] = fmt_fields
 
-			
-		
+
+
 		data = None
 		# return params, data
 		return data, params
@@ -128,25 +128,39 @@ class Quote ( AuthenticatedEndpoint ):
 
 
 
-def quote ( self, symbols: list =[], fields: list =[], dataframe=True ):
+def quote ( self, symbols: list =[], fields: list =[], dataframe=True, block: bool = True ):
 	"""Gets the most current market data on the price of a symbol.
 
 	Args:
-		symbols: string or list of strings, each string a symbol to be queried.
+		symbols:
+
+			string or list of strings, each string a symbol to be queried.
 			Notice symbols=['spy'], symbols='spy both work
-		fields: string or list of strings, each string a field to be grabbed.
+
+		fields:
+
+			string or list of strings, each string a field to be grabbed.
 			By default, get all fields
-		dataframe: flag, specifies whether to return data in pandas dataframe
+
+		dataframe:
+
+			flag, specifies whether to return data in pandas dataframe
 			or flat list of dictionaries.
-	
+
+		block:
+			Specify whether to block thread if request exceeds rate limit
+
 	Returns:
 		Depends on dataframe flag. Will return pandas dataframe, or possibly
 		list of dictionaries, each one a single quote.
-	
+
+	Raises:
+		RateLimitException: If block=False, rate limit problems will be raised
+
 	Examples:
 
 .. code-block:: python
-	
+
 	# Get the quotes in dataframe format
 	#  Each row will only have elements bid, ask, and last
 	quotes = a.quote(
@@ -159,7 +173,7 @@ def quote ( self, symbols: list =[], fields: list =[], dataframe=True ):
 
 
 .. code-block:: python
-	
+
 	# Get the quotes in dataframe format
 	quotes = a.quote(
 		'AAPL',
@@ -174,7 +188,8 @@ def quote ( self, symbols: list =[], fields: list =[], dataframe=True ):
 		auth		= self.auth,
 		account_nbr	= self.account_nbr,
 		symbols		= symbols,
-		fields		= fields
+		fields		= fields,
+		block		= block
 	).request()
 
 
@@ -183,6 +198,6 @@ def quote ( self, symbols: list =[], fields: list =[], dataframe=True ):
 			result = Quote.DataFrame ( result )
 		except:
 			raise
-	
+
 
 	return result

@@ -1,7 +1,7 @@
 # MIT License
-#
+# 
 # Copyright (c) 2020 Brett Graves
-#
+# 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -19,21 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Contrls the API functions, used for almost every feature of the library.
 
-# from requests.exceptions import ConnectionError, HTTPError, Timeout
-from enum					import Enum
-from requests				import Request, Session
-from requests.exceptions	import HTTPError,Timeout
-from .utils					import (
-	pretty_print_POST,
-	JSONStreamParser
-)
-import datetime
-import logging
-
-
-
-"""
 - Auth-less request,
 	* (market clock, etc)
 	* should be a class method
@@ -43,6 +30,22 @@ import logging
 	* submit order
 	* etc
 	* should be object method
+
+"""
+from requests				import Request, Session
+from requests.exceptions	import HTTPError,Timeout
+from .						import RateLimit
+from .classes				import RequestType
+from .utils					import (
+	pretty_print_POST,
+	JSONStreamParser
+)
+import datetime
+import json
+
+
+from enum					import Enum
+import logging
 
 
 - Rate limits
@@ -71,7 +74,7 @@ class Endpoint:
 
 	# Host
 	_host = 'https://api.tradeking.com/v1/'
-
+	
 	# One of RequestType
 	_type = None
 
@@ -79,13 +82,13 @@ class Endpoint:
 	_resource = ''
 
 	# GET, POST, etc.
-	_method = 'GET'
+	_method	= 'GET'
 
 	# results
 	_results = None
 
 	req = None
-
+	
 
 
 
@@ -93,6 +96,7 @@ class Endpoint:
 	@classmethod
 	def url ( cls ):
 		return cls._host + cls._resource
+	
 
 
 
@@ -129,23 +133,28 @@ class Endpoint:
 
 
 
+
+	def _fetch_raw ( self, stream=False ):
+		return self.s.send(
+			self.req,
+			stream=stream
+		)
+
+
+
 	def request ( self=None ):
 		"""Execute an entire loop, and aggregate results
 		"""
+		x = self._fetch_raw()
 
-		# use current session instance to send prepared request
-		x = self.s.send(self.req)
-
-		# raise exception now, if there was an http error
 		x.raise_for_status()
-
 
 		return self.extract ( x )
 
 
 
 
-
+	
 
 	def __init__ ( self, auth = None, **kwargs ):
 		"""Create and send request
@@ -164,15 +173,19 @@ class Endpoint:
 
 
 		req_auth = None if auth is None else auth.auth
-
+		
 		# Create a prepped request
-		self.req = Request(
+		self.req = self.s.prepare_request(
+			Request(
 				self._method,
 				self.resolve( **kwargs ),
 				auth	= req_auth,
 				params	= send_params,
 				data	= send_data
-				).prepare()
+			)
+		)
+
+
 
 
 
@@ -215,8 +228,7 @@ class StreamEndpoint ( AuthenticatedEndpoint ):
 		"""Execute an entire loop, and aggregate results
 		"""
 
-		# use current session instance to send prepared request
-		x = self.s.send(self.req,stream=True)
+		x = self._fetch_raw(stream=True)
 
 		x.raise_for_status()
 

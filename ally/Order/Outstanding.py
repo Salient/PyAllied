@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -53,19 +53,26 @@ class OutstandingOrders ( AccountEndpoint ):
 
 
 
-def orders ( self ):
+def orders ( self, block: bool = True ):
 	"""View all recent orders in the last 24 hours.
 
 	Calls accounts/./orders.json from the Ally API.
-	
+
+	Args:
+		block: Specify whether to block thread if request exceeds rate limit
+
 	Returns:
 		A list of Order objects. Attributes can be viewed in the
 		same way as orders created by the user.
-	
+
+	Raises:
+		RateLimitException: If block=False, rate limit problems will be raised
+
 	"""
 	result = OutstandingOrders(
 		auth		= self.auth,
-		account_nbr = self.account_nbr
+		account_nbr = self.account_nbr,
+		block		= block
 	).request()
 
 	return result

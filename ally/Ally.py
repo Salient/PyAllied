@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,6 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+"""ally.Ally module.
+
+Controls the Ally() account class, the bread and butter of the library.
+"""
 
 
 from os			import environ
@@ -31,7 +36,7 @@ from .Watchlist	import Watchlist
 
 
 
-_all_params = ( 
+_all_params = (
 	'ALLY_OAUTH_SECRET',
 	'ALLY_OAUTH_TOKEN',
 	'ALLY_CONSUMER_SECRET',
@@ -44,7 +49,9 @@ _all_params = (
 
 class Ally:
 
-	# Import all our class methods
+	# No docstring
+	""
+
 	from .Account	import (
 		holdings,
 		balances,
@@ -85,13 +92,13 @@ class Ally:
 
 		Manage your account
 			Track the current and past state of your account. Visit the Account_ page for full details.
-			
+
 			* Balances (gets all current cash and margin balances)
-			
+
 			* History (gets full history of all trades, dividends, and cash transfers of the account)
 
 			* Holdings (gets list of all currently-held non-cash positions, and profitability information)
-			
+
 		Get quotes
 			Specified in-detail in Quotes_. Supports 3 types of quote-gathering:
 
@@ -121,7 +128,7 @@ class Ally:
 
 	.. code-block:: python
 
-				params = { 
+				params = {
 					'ALLY_OAUTH_SECRET': ...,
 					'ALLY_OAUTH_TOKEN': ...,
 					'ALLY_CONSUMER_SECRET': ...,
@@ -156,7 +163,7 @@ class Ally:
 		# Use environment variables
 		else:
 			params = self._param_load_environ()
-			
+
 
 		# Check that we have all the parameters we need
 		for t in _all_params:

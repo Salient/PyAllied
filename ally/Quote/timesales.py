@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -58,7 +58,7 @@ class Timesales ( AuthenticatedEndpoint ):
 		symbols	= kwargs.get('symbols',"")
 
 		# Interval
-		interval = kwargs.get('interval','5min')	
+		interval = kwargs.get('interval','5min')
 
 		# Start date
 		startdate = kwargs.get('startdate')
@@ -72,7 +72,7 @@ class Timesales ( AuthenticatedEndpoint ):
 			'startdate':startdate,
 			'enddate':enddate
 		}
-		
+
 		data = None
 		return params, data
 
@@ -98,7 +98,7 @@ class Timesales ( AuthenticatedEndpoint ):
 
 
 def timesales ( self, symbols: str, startdate: str, enddate: str,
-	interval: str = '5min', dataframe=True ):
+	interval: str = '5min', dataframe=True, block: bool = True ):
 	"""Gets the most current market data on the price of a symbol.
 
 	Gets a dataset of price points and other information for a symbol.
@@ -116,21 +116,33 @@ def timesales ( self, symbols: str, startdate: str, enddate: str,
 	in the future as well.
 
 	Args:
-		symbols: single symbol to query historical quotes on
-		startdate: string, the start date of interval
-		enddate: string, end date of the interval
-		interval: string, specify the size of each time interval.
+		symbols:
+			single symbol to query historical quotes on
+
+		startdate:
+			string, the start date of interval
+
+		enddate:
+			string, end date of the interval
+
+		interval:
+			string, specify the size of each time interval.
 			Must be one of ('1min','5min','15min')
-		dataframe: flag, specifies whether to return data in pandas dataframe
-			or flat list of dictionaries.
-	
+
+		dataframe:
+			flag, specifies whether to return data in pandas dataframe or flat list of dictionaries.
+
+		block: Specify whether to block thread if request exceeds rate limit
+
 	Returns:
 		Depends on dataframe flag. Will return pandas dataframe, or possibly
 		list of dictionaries, each one a single quote.
-	
+
+	Raises:
+		RateLimitException: If block=False, rate limit problems will be raised
 
 	Examples:
-		
+
 .. code-block:: python
 
 	gld_history = a.timesales (
@@ -147,7 +159,8 @@ def timesales ( self, symbols: str, startdate: str, enddate: str,
 		symbols		= symbols,
 		interval	= interval,
 		startdate	= startdate,
-		enddate		= enddate
+		enddate		= enddate,
+		block		= block
 	).request()
 
 
