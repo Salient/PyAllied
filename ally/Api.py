@@ -1,7 +1,7 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Brett Graves
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -31,7 +31,12 @@
 	* etc
 	* should be object method
 
+- Rate limits
+	* 40 per minute, order submission (including submit, modify, cancel)
+	* 60 per minute, market quotes
+	* 180 per minute, user info like balance, summary, etc
 """
+
 from requests				import Request, Session
 from requests.exceptions	import HTTPError,Timeout
 from .						import RateLimit
@@ -48,12 +53,6 @@ from enum					import Enum
 import logging
 
 
-- Rate limits
-	* 40 per minute, order submission (including submit, modify, cancel)
-	* 60 per minute, market quotes
-	* 180 per minute, user info like balance, summary, etc
-
-"""
 
 
 
@@ -74,7 +73,7 @@ class Endpoint:
 
 	# Host
 	_host = 'https://api.tradeking.com/v1/'
-	
+
 	# One of RequestType
 	_type = None
 
@@ -88,7 +87,7 @@ class Endpoint:
 	_results = None
 
 	req = None
-	
+
 
 
 
@@ -96,7 +95,7 @@ class Endpoint:
 	@classmethod
 	def url ( cls ):
 		return cls._host + cls._resource
-	
+
 
 
 
@@ -134,18 +133,13 @@ class Endpoint:
 
 
 
-	def _fetch_raw ( self, stream=False ):
-		return self.s.send(
-			self.req,
-			stream=stream
-		)
 
 
 
 	def request ( self=None ):
 		"""Execute an entire loop, and aggregate results
 		"""
-		x = self._fetch_raw()
+		x = self.s.send(self.req)
 
 		x.raise_for_status()
 
@@ -154,7 +148,7 @@ class Endpoint:
 
 
 
-	
+
 
 	def __init__ ( self, auth = None, **kwargs ):
 		"""Create and send request
@@ -173,7 +167,7 @@ class Endpoint:
 
 
 		req_auth = None if auth is None else auth.auth
-		
+
 		# Create a prepped request
 		self.req = self.s.prepare_request(
 			Request(
@@ -228,7 +222,7 @@ class StreamEndpoint ( AuthenticatedEndpoint ):
 		"""Execute an entire loop, and aggregate results
 		"""
 
-		x = self._fetch_raw(stream=True)
+		x = self.s.send(self.req,stream=True)
 
 		x.raise_for_status()
 

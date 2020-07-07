@@ -27,8 +27,8 @@ import weakref
 from .methods import (
 	GetWatchlist,
 	GetWatchlists,
-	CreateWatchlist,
 	AppendWatchlist,
+	CreateWatchlist,
 	DeleteWatchlist,
 	DeleteFromWatchlist
 )
@@ -36,14 +36,6 @@ from .methods import (
 
 
 class WatchlistWrapper ( MutableSet ):
-	_name = ""
-	_syms = set()
-
-	def __init__ ( self, parent, name, symbols ):
-		self._name = name
-		self._syms = set(symbols)
-		self._auth = weakref.ref(parent._auth())
-
 
 	def __str__( self ):
 		return str(self._syms)
@@ -54,19 +46,39 @@ class WatchlistWrapper ( MutableSet ):
 
 
 	def __contains__ ( self, x ):
-		return x in self._syms
+		return set(x) in self._syms
 
 
 	def __len__ ( self ):
-		return self._syms.__len__()
+		return len(self._syms)
 
 
-	def add ( self, x ):
-		if x not in self._syms:
+	def add ( self, x, lazy = False ):
+		if isinstance(x, str):
+			x = [x]
+
+		# Appending to a non-existent watchlist does not do anything
+		if not len(self._syms):
+			CreateWatchlist(
+				auth			= self._auth(),
+				watchlist_name		= self._name,
+				watchlist_symbols	= x
+			).request()
+
+		elif set(x) not in self._syms:
 			result = AppendWatchlist(
 				auth			= self._auth(),
 				watchlist_name		= self._name,
 				watchlist_symbols	= x
+			).request()
+
+		if not lazy:
+			self.update()
+
+	def update(self):
+		self._syms = GetWatchlist(
+					auth			= self._auth(),
+					watchlist_name	= self._name
 			).request()
 
 
@@ -78,9 +90,13 @@ class WatchlistWrapper ( MutableSet ):
 				watchlist_symbol	= x
 			).request()
 
-
-
-
+	def __init__ ( self, parent, name, symbols=None):
+		self._name = name
+		self._auth = weakref.ref(parent._auth())
+		if symbols:
+			self._syms = symbols
+		else:
+			self.update()
 
 
 
@@ -138,8 +154,12 @@ class Watchlist ( MutableMapping ):
 
 
 	def __setitem__ ( self, name, symbols ):
-		if type(symbols) != type([]):
-			symbols = [str(symbols)]
+		if name in self.watched:
+			# this actually appends to the list if it already exists
+			self.pop(name)
+
+		if isinstance(symbols, str):
+			symbols = [symbols]
 
 		CreateWatchlist(
 			auth				= self._auth(),
@@ -147,7 +167,9 @@ class Watchlist ( MutableMapping ):
 			watchlist_symbols	= symbols
 		).request()
 
-
+		# server doesn't actually indicate if it was successful or not :-\
+		# we'll just choose to be optimists
+		return WatchlistWrapper(self, name)
 
 	def __delitem__ ( self, name ):
 		DeleteWatchlist(
@@ -161,6 +183,7 @@ class Watchlist ( MutableMapping ):
 	def _all ( self ):
 		"""Reusable way to get all watchlists
 		"""
+		print('all is well')
 		t = datetime.now()
 
 		if self._expire is None or self._expire < t:
@@ -175,10 +198,12 @@ class Watchlist ( MutableMapping ):
 		return self._lists
 
 
+	# def update( self):
+	#	  self.watched = _all()
+
 
 	def __str__ ( self ):
 		return str(self._all)
-
 
 
 	def __iter__ ( self ):
@@ -189,14 +214,11 @@ class Watchlist ( MutableMapping ):
 		return self._all.__iter__()
 
 
-
-
 	def __len__ ( self ):
 		return len(self._all)
 
 
-
-
 	def __init__ ( self, parent ):
 		self._auth = weakref.ref(parent.auth)
-
+		# self.update()
+		self._all

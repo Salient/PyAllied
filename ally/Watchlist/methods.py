@@ -92,7 +92,7 @@ class CreateWatchlist ( Endpoint ):
 
 
 
-class DeleteWatchlist ( Endpoint ):
+class DeleteWatchlist ( WatchlistEndpoint ):
 	"""Outright delete an entire watchlist
 	"""
 	_type		= RequestType.Info
@@ -101,7 +101,7 @@ class DeleteWatchlist ( Endpoint ):
 
 
 
-class DeleteFromWatchlist ( WatchlistEndpoint ):
+class DeleteFromWatchlist ( AuthenticatedEndpoint ):
 	"""Delete selected symbols from a watchlist
 	"""
 	_type		= RequestType.Info
